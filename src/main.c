@@ -20,6 +20,19 @@ void rmNewLines(char *str) {
     }
 }
 
+void rmComments(char* input) {
+    char* comment_start = strstr(input, "//");
+    while (comment_start != NULL) {
+        char* line_end = strchr(comment_start, '\n');
+        if (line_end != NULL) {
+            memmove(comment_start, line_end, strlen(line_end) + 1);
+        } else {
+            *comment_start = '\0';
+        }
+        comment_start = strstr(input, "//");
+    }
+}
+
 void rmSpaces(char *str) {
     int inQuotes = 0;
     int j = 0;
@@ -29,7 +42,7 @@ void rmSpaces(char *str) {
             inQuotes = !inQuotes;
         }
 
-        if (inQuotes) {
+        if (inQuotes) { // skip
             str[j++] = str[i];
         } else {
             if (str[i] != ' ' || (j > 0 && str[j - 1] != ' ')) {
@@ -126,6 +139,7 @@ int main(int argv, char** argc) {
 
     char* str = readFile(argc[2]);
 
+    rmComments(str);
     rmNewLines(str);
     rmSpaces(str);
 
@@ -185,8 +199,9 @@ int main(int argv, char** argc) {
     fprintf(build, buff);
     fclose(build);
 
-    system("./build");
-    printf("ГЦЦ: Лѣтопись переписана и ждетъ запуска.\n");
+    int status = system("./build");
+    if (status == 0)
+        printf("ГЦЦ: Лѣтопись переписана и ждетъ запуска.\n");
 
     return 0;
 }
