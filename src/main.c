@@ -20,6 +20,26 @@ void rmNewLines(char *str) {
     }
 }
 
+void rmSpaces(char *str) {
+    int inQuotes = 0;
+    int j = 0;
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '"') {
+            inQuotes = !inQuotes;
+        }
+
+        if (inQuotes) {
+            str[j++] = str[i];
+        } else {
+            if (str[i] != ' ' || (j > 0 && str[j - 1] != ' ')) {
+                str[j++] = str[i];
+            }
+        }
+    }
+    str[j] = '\0';
+}
+
 void replaceWord(char *str, const char *oldWord, const char *newWord) {
     char buffer[1024]; // Буфер для хранения результата
     char *pos;
@@ -39,7 +59,9 @@ void replaceWord(char *str, const char *oldWord, const char *newWord) {
             // Проверяем, совпадает ли слово с oldWord
             if (strncmp(&str[i], oldWord, oldWordLen) == 0 && 
                 (i == 0 || str[i - 1] == ' ') && 
-                (str[i + oldWordLen] == ' ' || str[i + oldWordLen] == '(' || str[i + oldWordLen] == '\0')) {
+                (str[i + oldWordLen] == ' ' || str[i + oldWordLen] == '(' || 
+                str[i + oldWordLen] == '*' || str[i + oldWordLen] == '\0')) {
+
                 // Если совпадает, добавляем newWord в буфер
                 strcpy(&buffer[index], newWord);
                 index += newWordLen;
@@ -105,17 +127,42 @@ int main(int argv, char** argc) {
     char* str = readFile(argc[2]);
 
     rmNewLines(str);
-
+    rmSpaces(str);
 
 
     //          STR  ЧТО МЕНЯТЬ       НА ЧТО МЕНЯТЬ
     replaceWord(str, "#внѣдрить",     "#include");
     replaceWord(str, "цѣло",          "int");
-    replaceWord(str, "императоръ()",  "main()");
+    replaceWord(str, "императоръ",    "main");
     replaceWord(str, "молвитьф",      "printf");
     replaceWord(str, "дань",          "return");
-
-
+    // Respect to Xi816
+    replaceWord(str, "долговязый",    "long");
+    replaceWord(str, "краткій",       "short");
+    replaceWord(str, "знакъ",         "char"); // Edited by adisteyf
+    replaceWord(str, "машинный",      "auto");
+    replaceWord(str, "коли",          "if");
+    replaceWord(str, "коль",          "if");
+    replaceWord(str, "але",           "else"); // Edited by adisteyf
+    replaceWord(str, "егда",          "while");
+    replaceWord(str, "конѣцъ",        "break");
+    replaceWord(str, "далѣе",         "continue");
+    replaceWord(str, "пути",          "switch");
+    replaceWord(str, "яко",           "case");
+    replaceWord(str, "кондиции",      "default"); // Edited by adisteyf
+    replaceWord(str, "умолчаніе",     "default"); // Edited by adisteyf
+    replaceWord(str, "делати",        "do");
+    replaceWord(str, "кратокъ-плавъ", "float");
+    replaceWord(str, "долгий-плавъ",  "double");
+    replaceWord(str, "перѣпись",      "enum");
+    replaceWord(str, "для",           "for");
+    replaceWord(str, "походъ",        "goto");
+    replaceWord(str, "дворянинъ",     "signed"); // Edited by adisteyf
+    replaceWord(str, "крестьянинъ",   "unsigned"); // Edited by adisteyf
+    replaceWord(str, "размѣръ",       "sizeof");
+    replaceWord(str, "домъ",          "struct");
+    replaceWord(str, "нѣту",          "void"); // Edited by adisteyf
+    // End respect to Xi816
 
     FILE *file = fopen(".gcc_temp.c", "w");
     if (file == NULL) {
