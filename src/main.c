@@ -109,8 +109,25 @@ int main() {
     replaceWord(str, "молвитьф",      "printf");
     replaceWord(str, "дань",          "return");
 
-
     printf("%s\n", str);
+
+    FILE *file = fopen(".gcc_temp.c", "w");
+    if (file == NULL) {
+        perror("ГЦЦ003: Курьезъ при открытіи лѣтописи для сохраненія.");
+        return EXIT_FAILURE;
+    }
+
+    fprintf(file, str);
+
+    char cmd[50];
+    sprintf(cmd, "gcc .gcc_temp.c -o %s", "test_b");
+    printf(cmd);printf("<- команда\n");
+
+    if (system(cmd) != 0) {
+        printf("ГЦЦ004: Курьезъ при превращеніи лѣтописи.\n");
+    }
+
+    //fprintf(file, "%s", str);
 
     return 0;
 }

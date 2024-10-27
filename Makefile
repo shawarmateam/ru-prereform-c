@@ -1,3 +1,4 @@
+#! ROOT MAKEFILE
 # vars
 BUILD_D = bin
 CODE_D = src
