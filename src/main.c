@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -58,11 +59,46 @@ void replaceWord(char *str, const char *oldWord, const char *newWord) {
     strcpy(str, buffer);
 }
 
+char* readFile(const char* filename) {
+    FILE *file;
+    char line[256];
+    char *content = NULL; // Указатель на строку для хранения всего содержимого
+    size_t total_length = 0; // Общая длина содержимого
+
+    // Открываем файл для чтения
+    file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("ГЦЦ001: Курьезъ при открытіи лѣтописи.");
+        return NULL;
+    }
+
+    // Читаем файл построчно
+    while (fgets(line, sizeof(line), file)) {
+        size_t line_length = strlen(line);
+
+        // Увеличиваем общий размер содержимого
+        char *new_content = realloc(content, total_length + line_length + 1); // +1 для '\0'
+        if (new_content == NULL) {
+            perror("ГЦЦ002: Курьезъ при выдѣленіи знати.");
+            free(content);
+            fclose(file);
+            return NULL;
+        }
+        content = new_content;
+
+        // Копируем строку в содержимое
+        strcpy(content + total_length, line);
+        total_length += line_length; // Обновляем общую длину
+    }
+
+    // Закрываем файл
+    fclose(file);
+    return content;
+}
+
 int main() {
-    FILE* file = fopen("тест.ц", "r");
-
-
-    char str[1024] = "#внѣдрить <stdio.h>\n\nцѣло императоръ() {\n    молвитьф(\"слава Петру I\");\n    дань 0;\n}";
+    //char str[1024] = "#внѣдрить <stdio.h>\n\nцѣло императоръ() {\n    молвитьф(\"молвитьф\");\n    дань 0;\n}";
+    char* str = readFile("тест.ц");
 
     rmNewLines(str);
 
