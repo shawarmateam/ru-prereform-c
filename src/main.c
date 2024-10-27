@@ -96,12 +96,18 @@ char* readFile(const char* filename) {
     return content;
 }
 
-int main() {
-    //char str[1024] = "#внѣдрить <stdio.h>\n\nцѣло императоръ() {\n    молвитьф(\"молвитьф\");\n    дань 0;\n}";
-    char* str = readFile("тест.ц");
+int main(int argv, char** argc) {
+    if (argv < 3) {
+        printf("ГЦЦ005: очень мало тезисовъ.\n");
+        return -1;
+    }
+
+    char* str = readFile(argc[2]);
 
     rmNewLines(str);
 
+
+    
     //          STR  ЧТО МЕНЯТЬ       НА ЧТО МЕНЯТЬ
     replaceWord(str, "#внѣдрить",     "#include");
     replaceWord(str, "цѣло",          "int");
@@ -109,7 +115,7 @@ int main() {
     replaceWord(str, "молвитьф",      "printf");
     replaceWord(str, "дань",          "return");
 
-    printf("%s\n", str);
+
 
     FILE *file = fopen(".gcc_temp.c", "w");
     if (file == NULL) {
@@ -123,16 +129,16 @@ int main() {
 
     FILE *build = fopen("./build", "w");
     if (file == NULL) {
-        perror("ГЦЦ003: Курьезъ при открытіи лѣтописи.");
+        perror("ГЦЦ004: Курьезъ при открытіи лѣтописи.");
         return EXIT_FAILURE;
     }
 
     char buff[50];
-    sprintf(buff, "#! /bin/sh\n\n%s", "gcc .gcc_temp.c -o test");
+    sprintf(buff, "#! /bin/sh\n\n%s", argc[1]);
     fprintf(build, buff);
     fclose(build);
 
-    printf("ГЦЦ: Лѣтопись переписана и ждетъ превращенія.");
+    printf("ГЦЦ: Лѣтопись переписана и ждетъ превращенія.\n");
 
     return 0;
 }
