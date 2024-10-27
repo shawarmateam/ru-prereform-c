@@ -107,7 +107,7 @@ int main(int argv, char** argc) {
     rmNewLines(str);
 
 
-    
+
     //          STR  ЧТО МЕНЯТЬ       НА ЧТО МЕНЯТЬ
     replaceWord(str, "#внѣдрить",     "#include");
     replaceWord(str, "цѣло",          "int");
@@ -138,7 +138,8 @@ int main(int argv, char** argc) {
     fprintf(build, buff);
     fclose(build);
 
-    printf("ГЦЦ: Лѣтопись переписана и ждетъ превращенія.\n");
+    system("./build");
+    printf("ГЦЦ: Лѣтопись переписана и ждетъ запуска.\n");
 
     return 0;
 }
