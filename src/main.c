@@ -20,7 +20,6 @@ void rmNewLines(char *str) {
 }
 
 void replaceWord(char *str, const char *oldWord, const char *newWord) {
-    rmNewLines(str);
     char buffer[1024]; // Буфер для хранения результата
     char *pos;
     bool inQuotes = false;
@@ -60,7 +59,12 @@ void replaceWord(char *str, const char *oldWord, const char *newWord) {
 }
 
 int main() {
+    FILE* file = fopen("тест.ц", "r");
+
+
     char str[1024] = "#внѣдрить <stdio.h>\n\nцѣло императоръ() {\n    молвитьф(\"слава Петру I\");\n    дань 0;\n}";
+
+    rmNewLines(str);
 
     //          STR  ЧТО МЕНЯТЬ       НА ЧТО МЕНЯТЬ
     replaceWord(str, "#внѣдрить",     "#include");
