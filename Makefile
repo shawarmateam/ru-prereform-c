@@ -9,10 +9,10 @@ all: build
 
 build: ./${CODE_D}/main.c
 	mkdir -p bin/
-	gcc -o ${BUILD_D}/main.o ${FILES}
+	gcc -o ${BUILD_D}/main ${FILES}
 
 run: build
-	./${BUILD_D}/main.o
+	./${BUILD_D}/main
 
 clean:
 	rm -rf ./${BUILD_D}/*

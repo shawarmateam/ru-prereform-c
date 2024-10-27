@@ -118,16 +118,21 @@ int main() {
     }
 
     fprintf(file, str);
+    fclose(file);
+    
 
-    char cmd[50];
-    sprintf(cmd, "gcc .gcc_temp.c -o %s", "test_b");
-    printf(cmd);printf("<- команда\n");
-
-    if (system(cmd) != 0) {
-        printf("ГЦЦ004: Курьезъ при превращеніи лѣтописи.\n");
+    FILE *build = fopen("./build", "w");
+    if (file == NULL) {
+        perror("ГЦЦ003: Курьезъ при открытіи лѣтописи.");
+        return EXIT_FAILURE;
     }
 
-    //fprintf(file, "%s", str);
+    char buff[50];
+    sprintf(buff, "#! /bin/sh\n\n%s", "gcc .gcc_temp.c -o test");
+    fprintf(build, buff);
+    fclose(build);
+
+    printf("ГЦЦ: Лѣтопись переписана и ждетъ превращенія.");
 
     return 0;
 }
