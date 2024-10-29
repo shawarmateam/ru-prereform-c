@@ -3,6 +3,18 @@
 #include <string.h>
 #include <stdbool.h>
 
+struct Defs {
+    int len; // 29 by def.
+    //char[][len] initDefs = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
+    //"пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", NULL};
+
+    //char[][len] initDefsOn = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
+    //"switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", NULL};
+
+    char** allDefs;
+    char** allDefsOn;
+};
+
 void rmNewLines(char *str) {
     bool isHashStr = false;
 
@@ -53,13 +65,35 @@ void rmSpaces(char *str) {
     str[j] = '\0';
 }
 
-void replaceWord(char *str, const char *oldWord, const char *newWord) {
+char** resizeArray(char** old_array, int old_size, int new_size) {
+    char** new_array = malloc(new_size * sizeof(char*));
+    if (new_array == NULL) {
+        perror("Failed to allocate memory");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < old_size; i++) {
+        new_array[i] = old_array[i];
+    }
+
+    for (int i = old_size; i < new_size; i++) {
+        new_array[i] = NULL;
+    }
+
+    free(old_array);
+
+    return new_array;
+}
+
+
+bool replaceWord(char *str, const char *oldWord, const char *newWord) {
     char buffer[1024]; // Буфер для хранения результата
     char *pos;
     bool inQuotes = false;
     int index = 0;
     int oldWordLen = strlen(oldWord);
     int newWordLen = strlen(newWord);
+    bool wasReplaced = false;
 
     for (int i = 0; str[i] != '\0'; i++) {
         // Проверяем, находимся ли мы в кавычках
@@ -76,6 +110,7 @@ void replaceWord(char *str, const char *oldWord, const char *newWord) {
                 str[i + oldWordLen] == '*' || str[i + oldWordLen] == '\0')) {
 
                 // Если совпадает, добавляем newWord в буфер
+                if (!wasReplaced) wasReplaced = true;
                 strcpy(&buffer[index], newWord);
                 index += newWordLen;
                 i += oldWordLen - 1; // Пропускаем oldWord
@@ -92,6 +127,7 @@ void replaceWord(char *str, const char *oldWord, const char *newWord) {
 
     // Копируем результат обратно в исходную строку
     strcpy(str, buffer);
+    return wasReplaced;
 }
 
 char* readFile(const char* filename) {
@@ -131,52 +167,88 @@ char* readFile(const char* filename) {
     return content;
 }
 
+void g_includes(char *g_content) {
+    // find index of #внѣдрить
+    const char *p = (const char*) g_content;
+    const char *word = "#внѣдрить";
+
+    int index = 0;
+    int wordLength = strlen(word);
+
+    while ((p = strstr(p, word)) != NULL) {
+        printf("Найдено слово '%s' на индексе: %d\n", word, p - g_content);
+        p += wordLength;
+    }
+}
+
+char** splitString(const char* input) {
+    char* token = strtok(input, " ");
+    short argsSize = 1; // max 255 args
+    
+    for (int i=0; input[i] != NULL; ++i) {
+        if (input[i] == ' ') {
+            argsSize++;
+        }
+    }
+
+    char** args = malloc(argsSize*(char*));
+
+    short i = 0;
+    while (token != NULL) {
+        args[i++] = token;
+        token = strtok(NULL, delimiters);
+    }
+
+    return args;
+}
+
 int main(int argv, char** argc) {
+    if (argv == 3 && argc[1] == "checkg") {
+        g_includes(readFile(argc[2]));
+        return 0;
+    }
+
     if (argv < 3) {
         printf("ГЦЦ005: очень мало тезисовъ.\n");
         return -1;
     }
 
     char* str = readFile(argc[2]);
+    int allDefsSize = 1;
+    struct Defs defs;
+    char allDefs[][29] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
+    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту"};
+
+    char defsIn[][29] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
+    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void"};
+    
+    defs.len = 29;
+
+    defs.allDefs = malloc(defs.len * sizeof(char*));
+    defs.allDefsOn = malloc(defs.len * sizeof(char*));
+
+    for (int i = 0; i < defs.len; i++) {
+        defs.allDefs[i] = allDefs[i];
+    }
+    for (int i = 0; i < defs.len; i++) {
+        defs.allDefsOn[i] = defsIn[i];
+    }
 
     rmComments(str);
     rmNewLines(str);
     rmSpaces(str);
 
-
-    //          STR  ЧТО МЕНЯТЬ       НА ЧТО МЕНЯТЬ
-    replaceWord(str, "#внѣдрить",     "#include");
-    replaceWord(str, "цѣло",          "int");
-    replaceWord(str, "императоръ",    "main");
-    replaceWord(str, "молвитьф",      "printf");
-    replaceWord(str, "дань",          "return");
-    // Respect to Xi816
-    replaceWord(str, "долговязый",    "long");
-    replaceWord(str, "краткій",       "short");
-    replaceWord(str, "знакъ",         "char"); // Edited by adisteyf
-    replaceWord(str, "машинный",      "auto");
-    replaceWord(str, "коли",          "if");
-    replaceWord(str, "коль",          "if");
-    replaceWord(str, "але",           "else"); // Edited by adisteyf
-    replaceWord(str, "егда",          "while");
-    replaceWord(str, "конѣцъ",        "break");
-    replaceWord(str, "далѣе",         "continue");
-    replaceWord(str, "пути",          "switch");
-    replaceWord(str, "яко",           "case");
-    replaceWord(str, "кондиции",      "default"); // Edited by adisteyf
-    replaceWord(str, "умолчаніе",     "default"); // Edited by adisteyf
-    replaceWord(str, "делати",        "do");
-    replaceWord(str, "кратокъ-плавъ", "float");
-    replaceWord(str, "долгий-плавъ",  "double");
-    replaceWord(str, "перѣпись",      "enum");
-    replaceWord(str, "для",           "for");
-    replaceWord(str, "походъ",        "goto");
-    replaceWord(str, "дворянинъ",     "signed"); // Edited by adisteyf
-    replaceWord(str, "крестьянинъ",   "unsigned"); // Edited by adisteyf
-    replaceWord(str, "размѣръ",       "sizeof");
-    replaceWord(str, "домъ",          "struct");
-    replaceWord(str, "нѣту",          "void"); // Edited by adisteyf
-    // End respect to Xi816
+    // обработка инфы дефов
+    for (int i=0; i<defs.len; ++i) {
+        replaceWord(str, defs.allDefs[i], defs.allDefsOn[i]);
+    }
+    
+    // For .г (like .h, but глава)
+    //g_includes();
+    printf("defs:");
+    for (int i=0; i<defs.len; ++i) {
+        printf("%s\n", defs.allDefs[i]);
+    }
 
     FILE *file = fopen(".gcc_temp.c", "w");
     if (file == NULL) {
