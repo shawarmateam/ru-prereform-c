@@ -4,7 +4,9 @@
 #include <stdbool.h>
 
 struct Defs {
-    int len; // 29 by def.
+    int len_d; // 30 by def.
+    int len_do; // 30 by def.
+
     //char[][len] initDefs = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
     //"пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", NULL};
 
@@ -65,31 +67,26 @@ void rmSpaces(char *str) {
     str[j] = '\0';
 }
 
-char** addElement(char** array, int* size, const char* newElement) {
-    int newSize = *size + 1;
-    char** newArray = (char**)malloc(newSize * sizeof(char*));
-    
+char** addString(char** array, int* size, const char* newString) {
+    // Увеличиваем размер массива на 1
+    char** newArray = realloc(array, (*size + 1) * sizeof(char*));
     if (newArray == NULL) {
+        // Обработка ошибки при выделении памяти
         perror("Unable to allocate memory");
-        return NULL;
+        return array; // Возвращаем старый массив, если realloc не удался
     }
 
-    for (int i = 0; i < *size; i++) {
-        newArray[i] = array[i];
-    }
-
-    newArray[*size] = (char*)malloc((strlen(newElement) + 1) * sizeof(char));
+    // Выделяем память для новой строки и копируем её
+    newArray[*size] = malloc(strlen(newString) + 1);
     if (newArray[*size] == NULL) {
-        perror("Unable to allocate memory for new element");
-        free(newArray);
-        return NULL;
+        // Обработка ошибки при выделении памяти
+        perror("Unable to allocate memory for new string");
+        return newArray; // Возвращаем новый массив, но без добавленной строки
     }
-    strcpy(newArray[*size], newElement);
+    strcpy(newArray[*size], newString);
 
-    if (array != NULL) free(array);
-
-    *size = newSize;
-
+    // Увеличиваем размер
+    (*size)++;
     return newArray;
 }
 
@@ -245,15 +242,16 @@ int main(int argv, char** argc) {
     char defsIn[][30] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
     "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const"};
     
-    defs.len = 30;
+    defs.len_d = 30;
+    defs.len_do = 30;
 
-    defs.allDefs = malloc(defs.len * sizeof(char*));
-    defs.allDefsOn = malloc(defs.len * sizeof(char*));
+    defs.allDefs = malloc(defs.len_d * sizeof(char*));
+    defs.allDefsOn = malloc(defs.len_do * sizeof(char*));
 
-    for (int i = 0; i < defs.len; i++) {
+    for (int i = 0; i < defs.len_d; i++) {
         defs.allDefs[i] = allDefs[i];
     }
-    for (int i = 0; i < defs.len; i++) {
+    for (int i = 0; i < defs.len_d; i++) {
         defs.allDefsOn[i] = defsIn[i];
     }
 
@@ -274,17 +272,11 @@ int main(int argv, char** argc) {
                 char** line = splitString(lineBuff, &len);
 
                 if (len == 2) {
-                    char** allDefs = addElement(defs.allDefs, &defs.len, (const char*) line[1]);
-                    char** allDefsOnT = addElement(defs.allDefsOn, &defs.len, "");
-
-                    defs.allDefs = allDefs;
-                    defs.allDefsOn = allDefsOnT;
+                    defs.allDefs = addString(defs.allDefs, &defs.len_d, line[1]);
+                    defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, "");
                 } else if (len == 3) {
-                    char** allDefs = addElement(defs.allDefs, &defs.len, (const char*) line[1]);
-                    char** allDefsOnT = addElement(defs.allDefsOn, &defs.len, (const char*) line[2]);
-
-                    defs.allDefs = allDefs;
-                    defs.allDefsOn = allDefsOnT;
+                    defs.allDefs = addString(defs.allDefs, &defs.len_d, line[1]);
+                    defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, line[2]);
                 }
 
                 for (int j=0; j<len; ++j) {
@@ -301,8 +293,8 @@ int main(int argv, char** argc) {
     rmSpaces(str);
 
     // обработка инфы дефов
-    printf("i (all): %d\n", defs.len);
-    for (int i=0; i<defs.len; ++i) {
+    printf("i (all): %d\n", defs.len_d);
+    for (int i=0; i<defs.len_d; ++i) {
         printf("i: %d\n", i);
         replaceWord(str, defs.allDefs[i], defs.allDefsOn[i]);
         printf("'%s'\n", defs.allDefs[i]);
@@ -312,7 +304,7 @@ int main(int argv, char** argc) {
     // For .г (like .h, but глава)
     //g_includes();
     printf("defs:");
-    for (int i=0; i<defs.len; ++i) {
+    for (int i=0; i<defs.len_d; ++i) {
         printf("%s\n", defs.allDefs[i]);
     }
 
