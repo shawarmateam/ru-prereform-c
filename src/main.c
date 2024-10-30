@@ -65,26 +65,33 @@ void rmSpaces(char *str) {
     str[j] = '\0';
 }
 
-char** resizeArray(char** old_array, int old_size, int new_size) {
-    char** new_array = malloc(new_size * sizeof(char*));
-    if (new_array == NULL) {
-        perror("Failed to allocate memory");
-        exit(EXIT_FAILURE);
+char** addElement(char** array, int* size, const char* newElement) {
+    int newSize = *size + 1;
+    char** newArray = (char**)malloc(newSize * sizeof(char*));
+    
+    if (newArray == NULL) {
+        perror("Unable to allocate memory");
+        return NULL;
     }
 
-    for (int i = 0; i < old_size; i++) {
-        new_array[i] = old_array[i];
+    for (int i = 0; i < *size; i++) {
+        newArray[i] = array[i];
     }
 
-    for (int i = old_size; i < new_size; i++) {
-        new_array[i] = NULL;
+    newArray[*size] = (char*)malloc((strlen(newElement) + 1) * sizeof(char));
+    if (newArray[*size] == NULL) {
+        perror("Unable to allocate memory for new element");
+        free(newArray);
+        return NULL;
     }
+    strcpy(newArray[*size], newElement);
 
-    free(old_array);
+    if (array != NULL) free(array);
 
-    return new_array;
+    *size = newSize;
+
+    return newArray;
 }
-
 
 bool replaceWord(char *str, const char *oldWord, const char *newWord) {
     char buffer[1024]; // Буфер для хранения результата
@@ -231,7 +238,6 @@ int main(int argv, char** argc) {
     }
 
     char* str = readFile(argc[2]);
-    int allDefsSize = 1;
     struct Defs defs;
     char allDefs[][30] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
     "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой"};
@@ -268,11 +274,17 @@ int main(int argv, char** argc) {
                 char** line = splitString(lineBuff, &len);
 
                 if (len == 2) {
-                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.allDefs[defs.len] = line[1]; defs.len++;
-                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.allDefsOn[defs.len] = NULL;
+                    char** allDefs = addElement(defs.allDefs, &defs.len, (const char*) line[1]);
+                    char** allDefsOnT = addElement(defs.allDefsOn, &defs.len, "");
+
+                    defs.allDefs = allDefs;
+                    defs.allDefsOn = allDefsOnT;
                 } else if (len == 3) {
-                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.allDefs[defs.len] = line[1]; defs.len++;
-                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.allDefsOn[defs.len] = line[2];
+                    char** allDefs = addElement(defs.allDefs, &defs.len, (const char*) line[1]);
+                    char** allDefsOnT = addElement(defs.allDefsOn, &defs.len, (const char*) line[2]);
+
+                    defs.allDefs = allDefs;
+                    defs.allDefsOn = allDefsOnT;
                 }
 
                 for (int j=0; j<len; ++j) {
@@ -289,8 +301,11 @@ int main(int argv, char** argc) {
     rmSpaces(str);
 
     // обработка инфы дефов
+    printf("i (all): %d\n", defs.len);
     for (int i=0; i<defs.len; ++i) {
+        printf("i: %d\n", i);
         replaceWord(str, defs.allDefs[i], defs.allDefsOn[i]);
+        printf("'%s'\n", defs.allDefs[i]);
     }
 
     
