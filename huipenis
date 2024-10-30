@@ -1,0 +1,76 @@
+
+    for (int i=0; i<strlen(str); ++i) {
+        if (str[0] == '#' || (str[i-1] == '\n' && str[i] == '#')) {
+            char iskorBuff[21];
+            for (int j=0; j<21; ++j) iskorBuff[j] = str[i+j];
+            
+            if (strcmp(iskorBuff, "#искоренить") == 0) {
+                // 25 chars on one arg
+                char lineBuff[25*2+2];
+                for (int j=0; str[i+j] != '\n'; ++j) {
+                    lineBuff[j] = str[i+j];
+                }
+
+                int len = 0;
+                char** line = splitString(lineBuff, &len);
+
+                if (len == 2) {
+                    defs.allDefs = addString(defs.allDefs, &defs.len_d, line[1]);
+                    defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, "");
+                } else if (len == 3) {
+                    defs.allDefs = addString(defs.allDefs, &defs.len_d, line[1]);
+                    defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, line[2]);
+                }
+
+                for (int j=0; j<len; ++j) {
+                    printf("%s\n", line[j]);
+                }
+            } else {
+                iskorBuff[17] = '\0';
+                if (strcmp(iskorBuff, "#внѣдрить") == 0) {
+                    printf("in #vnedrit'\n");
+                    // 25 chars on one arg
+                    char lineBuff[25*2+2];
+                    for (int j=0; str[i+j] != '\n'; ++j) {
+                        lineBuff[j] = str[i+j];
+                    }
+
+                    int len = 0;
+                    char** line = splitString(lineBuff, &len);
+                    int incLen = strlen(line[1]);
+                    bool hasOneDot = true;
+                    bool hasGAfterDot = false;
+                    bool onceDot = false;
+
+                    for (int j=0; j<incLen; ++j) {
+                        if      (line[1][j] == '.' &&  onceDot)  { hasOneDot = false; break; }
+                        else if (line[1][j] == '.' && !onceDot)    onceDot = true;
+                    }
+
+                    if (hasOneDot) {
+                        for (int j=0; j<incLen; ++j) {
+                            if (line[1][j] == '.')  //ru                    // letter 'г'
+                                if (line[1][j+1] == 0xd0 && line[1][j+2] == 0xb3) hasGAfterDot = true;
+                        }
+                    }
+
+                    if (len == 2) {
+                        printf("in len == 2 (%s)\n", line[1]);
+                        printf("%s\n", line[0], lineBuff);
+                        if (line[1][0] == '\"' && line[1][incLen-1] == '\"' && hasGAfterDot) {
+                            for (int j = 0; line[1][j] != '\0'; i++) {
+                                line[1][j] = line[1][ j+1 ]; // rm ""
+                            } line[1][incLen-1] = '\0';
+
+                            // reading file
+                            char* g_file = readFile(line[1]);
+                            rmSth(str, "//");
+                            replaceWord(str, lineBuff, g_file);
+                            printf("str: '%s'", str);
+                            i--;
+                        }
+                    }
+                }
+            }
+        }
+    }

@@ -223,6 +223,42 @@ char** splitString(const char *input, int *count) {
     return args; // Возвращаем массив аргументов
 }
 
+char** slavenizator(const char* str, int* count) {
+    int token_count = 0;
+    const char* temp = str;
+    while (*temp) {
+        if (*temp == '\n') {
+            token_count++;
+        }
+        temp++;
+    }
+    if (str[0] != 0) {
+        token_count++;
+    }
+
+    char** tokens = malloc(token_count * sizeof(char*));
+    if (!tokens) {
+        return NULL;
+    }
+
+    char* str_copy = strdup(str);
+    if (!str_copy) {
+        free(tokens);
+        return NULL;
+    }
+
+    char* token = strtok(str_copy, "\n");
+    int index = 0;
+    while (token) {
+        tokens[index++] = strdup(token);
+        token = strtok(NULL, "\n");
+    }
+
+    free(str_copy);
+    *count = token_count;
+    return tokens;
+}
+
 int main(int argv, char** argc) {
     if (argv == 3 && argc[1] == "checkg") {
         g_includes(readFile(argc[2]));
@@ -255,39 +291,39 @@ int main(int argv, char** argc) {
         defs.allDefsOn[i] = defsIn[i];
     }
 
+    printf("1'%s'\n", str);
+    // TODO: сделать по токенам
+    int len = 0;
+    const int strl = strlen(str);
+    printf("tokens start\n");
+    char **tokens = slavenizator(str, &len);  len-=3;
+    printf("tokens end\n");
 
-    for (int i=0; i<strlen(str); ++i) {
-        if (str[0] == '#' || (str[i-1] == '\n' && str[i] == '#')) {
-            char iskorBuff[21];
-            for (int j=0; j<21; ++j) iskorBuff[j] = str[i+j];
-            
-            if (strcmp(iskorBuff, "#искоренить") == 0) {
-                // 25 chars on one arg
-                char lineBuff[25*2+2];
-                for (int j=0; str[i+j] != '\n'; ++j) {
-                    lineBuff[j] = str[i+j];
-                }
+    printf("len: %d", len);
+    for (int i=0; i<len; ++i) {
+        if (tokens[i][0] == '#') {
+            int lena = 0;
+            char** args = splitString(tokens[i], &lena);
+            printf("split str\n");
 
-                int len = 0;
-                char** line = splitString(lineBuff, &len);
-
-                if (len == 2) {
-                    defs.allDefs = addString(defs.allDefs, &defs.len_d, line[1]);
-                    defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, "");
-                } else if (len == 3) {
-                    defs.allDefs = addString(defs.allDefs, &defs.len_d, line[1]);
-                    defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, line[2]);
-                }
-
-                for (int j=0; j<len; ++j) {
-                    printf("%s\n", line[j]);
+            if (lena != 0) {
+                if (lena > 1 && strcmp(args[0], "#искоренить") == 0) {
+                    if (lena == 2) {
+                        defs.allDefs = addString(defs.allDefs, &defs.len_d, args[1]);
+                        defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, "");
+                    } else if (lena == 3) {
+                        printf("defs start\n");
+                        defs.allDefs = addString(defs.allDefs, &defs.len_d, args[1]);
+                        defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, args[2]);
+                    }
+                    printf("искоренено\n");
                 }
             }
-
-            printf("iskorBuff: '%s'\n", iskorBuff);
         }
+        printf("i: '%d'\n", i);
     }
 
+    printf("2'%s'\n", str);
     rmSth(str, "//");
     rmSth(str, "#искоренить");
 
