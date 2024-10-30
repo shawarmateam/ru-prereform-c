@@ -253,27 +253,34 @@ int main(int argv, char** argc) {
 
 
     for (int i=0; i<strlen(str); ++i) {
-        if (str[0] == '#' && (str[i-1] == '\n' && str[i] == '#')) {
-            char iskorBuff[11];
-            for (int j=0; j<10; ++j) iskorBuff[j] = str[i+j];
+        if (str[0] == '#' || (str[i-1] == '\n' && str[i] == '#')) {
+            char iskorBuff[21];
+            for (int j=0; j<21; ++j) iskorBuff[j] = str[i+j];
             
-            if (iskorBuff == "#искоренить") {
+            if (strcmp(iskorBuff, "#искоренить") == 0) {
                 // 25 chars on one arg
                 char lineBuff[25*2+2];
-                for (int j=0; str[i+j] != '\n') {
+                for (int j=0; str[i+j] != '\n'; ++j) {
                     lineBuff[j] = str[i+j];
                 }
 
                 int len = 0;
                 char** line = splitString(lineBuff, &len);
+
                 if (len == 2) {
-                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.all[defs.len] = line[1];
-                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.all[defs.len] = NULL;
-                } else (len == 3) {
-                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.all[defs.len] = line[1];
-                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.all[defs.len] = line[2];
+                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.allDefs[defs.len] = line[1]; defs.len++;
+                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.allDefsOn[defs.len] = NULL;
+                } else if (len == 3) {
+                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.allDefs[defs.len] = line[1]; defs.len++;
+                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.allDefsOn[defs.len] = line[2];
+                }
+
+                for (int j=0; j<len; ++j) {
+                    printf("%s\n", line[j]);
                 }
             }
+
+            printf("iskorBuff: '%s'\n", iskorBuff);
         }
     }
 

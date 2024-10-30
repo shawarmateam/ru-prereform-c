@@ -1,2 +1,2 @@
-#include <stdio.h>
+#искоренить молвитьф printf
  int main() { молвитьф("слава Петру I\n"); молвитьф("и дворянамъ слава\n"); char* test = "hello world"; return 0; } 
