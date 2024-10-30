@@ -181,25 +181,42 @@ void g_includes(char *g_content) {
     }
 }
 
-char** splitString(const char* input) {
-    char* token = strtok(input, " ");
-    short argsSize = 1; // max 255 args
-    
-    for (int i=0; input[i] != NULL; ++i) {
-        if (input[i] == ' ') {
-            argsSize++;
-        }
+char** splitString(const char *input, int *count) {
+    char *input_copy = strdup(input); // Копируем входную строку
+    if (!input_copy) {
+        return NULL; // Проверка на успешное выделение памяти
     }
 
-    char** args = malloc(argsSize*(char*));
+    char **args = NULL;
+    *count = 0;
 
-    short i = 0;
+    // Разделяем строку на аргументы
+    char *token = strtok(input_copy, " ");
     while (token != NULL) {
-        args[i++] = token;
-        token = strtok(NULL, delimiters);
+        // Увеличиваем размер массива
+        args = (char **)realloc(args, (*count + 1) * sizeof(char *));
+        if (!args) {
+            free(input_copy); // Освобождаем память в случае ошибки
+            return NULL; // Проверка на успешное выделение памяти
+        }
+
+        // Выделяем память для нового аргумента и копируем его
+        args[*count] = strdup(token);
+        if (!args[*count]) {
+            free(input_copy);
+            for (int i = 0; i < *count; i++) {
+                free(args[i]); // Освобождаем ранее выделенную память
+            }
+            free(args);
+            return NULL; // Проверка на успешное выделение памяти
+        }
+
+        (*count)++;
+        token = strtok(NULL, " ");
     }
 
-    return args;
+    free(input_copy); // Освобождаем память, выделенную для копии строки
+    return args; // Возвращаем массив аргументов
 }
 
 int main(int argv, char** argc) {
@@ -216,13 +233,13 @@ int main(int argv, char** argc) {
     char* str = readFile(argc[2]);
     int allDefsSize = 1;
     struct Defs defs;
-    char allDefs[][29] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
-    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту"};
+    char allDefs[][30] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
+    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой"};
 
-    char defsIn[][29] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
-    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void"};
+    char defsIn[][30] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
+    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const"};
     
-    defs.len = 29;
+    defs.len = 30;
 
     defs.allDefs = malloc(defs.len * sizeof(char*));
     defs.allDefsOn = malloc(defs.len * sizeof(char*));
@@ -234,6 +251,32 @@ int main(int argv, char** argc) {
         defs.allDefsOn[i] = defsIn[i];
     }
 
+
+    for (int i=0; i<strlen(str); ++i) {
+        if (str[0] == '#' && (str[i-1] == '\n' && str[i] == '#')) {
+            char iskorBuff[11];
+            for (int j=0; j<10; ++j) iskorBuff[j] = str[i+j];
+            
+            if (iskorBuff == "#искоренить") {
+                // 25 chars on one arg
+                char lineBuff[25*2+2];
+                for (int j=0; str[i+j] != '\n') {
+                    lineBuff[j] = str[i+j];
+                }
+
+                int len = 0;
+                char** line = splitString(lineBuff, &len);
+                if (len == 2) {
+                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.all[defs.len] = line[1];
+                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.all[defs.len] = NULL;
+                } else (len == 3) {
+                    resizeArray(defs.allDefs, defs.len, defs.len+1); defs.all[defs.len] = line[1];
+                    resizeArray(defs.allDefsOn, defs.len, defs.len+1); defs.all[defs.len] = line[2];
+                }
+            }
+        }
+    }
+
     rmComments(str);
     rmNewLines(str);
     rmSpaces(str);
@@ -242,6 +285,7 @@ int main(int argv, char** argc) {
     for (int i=0; i<defs.len; ++i) {
         replaceWord(str, defs.allDefs[i], defs.allDefsOn[i]);
     }
+
     
     // For .г (like .h, but глава)
     //g_includes();
