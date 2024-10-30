@@ -34,8 +34,8 @@ void rmNewLines(char *str) {
     }
 }
 
-void rmComments(char* input) {
-    char* comment_start = strstr(input, "//");
+void rmSth(char* input, const char* symbols) {
+    char* comment_start = strstr(input, symbols);
     while (comment_start != NULL) {
         char* line_end = strchr(comment_start, '\n');
         if (line_end != NULL) {
@@ -43,7 +43,7 @@ void rmComments(char* input) {
         } else {
             *comment_start = '\0';
         }
-        comment_start = strstr(input, "//");
+        comment_start = strstr(input, symbols);
     }
 }
 
@@ -288,7 +288,9 @@ int main(int argv, char** argc) {
         }
     }
 
-    rmComments(str);
+    rmSth(str, "//");
+    rmSth(str, "#искоренить");
+
     rmNewLines(str);
     rmSpaces(str);
 
