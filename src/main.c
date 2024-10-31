@@ -259,40 +259,7 @@ char** slavenizator(const char* str, int* count) {
     return tokens;
 }
 
-int main(int argv, char** argc) {
-    if (argv == 3 && argc[1] == "checkg") {
-        g_includes(readFile(argc[2]));
-        return 0;
-    }
-
-    if (argv < 3) {
-        printf("ГЦЦ005: очень мало тезисовъ.\n");
-        return -1;
-    }
-
-    char* str = readFile(argc[2]);
-    struct Defs defs;
-    char allDefs[][30] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
-    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой"};
-
-    char defsIn[][30] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
-    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const"};
-    
-    defs.len_d = 30;
-    defs.len_do = 30;
-
-    defs.allDefs = malloc(defs.len_d * sizeof(char*));
-    defs.allDefsOn = malloc(defs.len_do * sizeof(char*));
-
-    for (int i = 0; i < defs.len_d; i++) {
-        defs.allDefs[i] = allDefs[i];
-    }
-    for (int i = 0; i < defs.len_d; i++) {
-        defs.allDefsOn[i] = defsIn[i];
-    }
-
-    printf("1'%s'\n", str);
-    // TODO: сделать по токенам
+void parsePreproc(struct Defs *defs, char *str) {
     int len = 0;
     const int strl = strlen(str);
     printf("tokens start\n");
@@ -309,19 +276,63 @@ int main(int argv, char** argc) {
             if (lena != 0) {
                 if (lena > 1 && strcmp(args[0], "#искоренить") == 0) {
                     if (lena == 2) {
-                        defs.allDefs = addString(defs.allDefs, &defs.len_d, args[1]);
-                        defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, "");
+                        defs->allDefs = addString(defs->allDefs, &defs->len_d, args[1]);
+                        defs->allDefsOn = addString(defs->allDefsOn, &defs->len_do, "");
                     } else if (lena == 3) {
                         printf("defs start\n");
-                        defs.allDefs = addString(defs.allDefs, &defs.len_d, args[1]);
-                        defs.allDefsOn = addString(defs.allDefsOn, &defs.len_do, args[2]);
+                        defs->allDefs = addString(defs->allDefs, &defs->len_d, args[1]);
+                        defs->allDefsOn = addString(defs->allDefsOn, &defs->len_do, args[2]);
                     }
                     printf("искоренено\n");
+                }
+
+                else if (lena > 1 && strcmp(args[0], "#гвнѣдрить") == 0) {
+                    char* g_file = readFile(args[1]);
+                    parsePreproc(defs, g_file);
+                    printf("tokens: '%s', g_file: '%s'\n", tokens[i], g_file);
                 }
             }
         }
         printf("i: '%d'\n", i);
     }
+}
+
+int main(int argv, char** argc) { // FIXME: сделать выделение памяти для defs.
+    if (argv == 3 && argc[1] == "checkg") {
+        g_includes(readFile(argc[2]));
+        return 0;
+    }
+
+    if (argv < 3) {
+        printf("ГЦЦ005: очень мало тезисовъ.\n");
+        return -1;
+    }
+
+    char* str = readFile(argc[2]);
+    struct Defs* defs;
+    char allDefs[][30] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
+    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой"};
+
+    char defsIn[][30] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
+    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const"};
+    
+    defs->len_d = 30;
+    printf("len_d added\n");
+    defs->len_do = 30;
+
+    defs->allDefs = malloc(defs->len_d * sizeof(char*));
+    defs->allDefsOn = malloc(defs->len_do * sizeof(char*));
+
+    for (int i = 0; i < defs->len_d; i++) {
+        defs->allDefs[i] = allDefs[i];
+    }
+    for (int i = 0; i < defs->len_d; i++) {
+        defs->allDefsOn[i] = defsIn[i];
+    }
+
+    printf("1'%s'\n", str);
+    // TODO: сделать в отдельную функцию
+    parsePreproc(defs, str);
 
     printf("2'%s'\n", str);
     rmSth(str, "//");
@@ -331,19 +342,19 @@ int main(int argv, char** argc) {
     rmSpaces(str);
 
     // обработка инфы дефов
-    printf("i (all): %d\n", defs.len_d);
-    for (int i=0; i<defs.len_d; ++i) {
+    printf("i (all): %d\n", defs->len_d);
+    for (int i=0; i<defs->len_d; ++i) {
         printf("i: %d\n", i);
-        replaceWord(str, defs.allDefs[i], defs.allDefsOn[i]);
-        printf("'%s'\n", defs.allDefs[i]);
+        replaceWord(str, defs->allDefs[i], defs->allDefsOn[i]);
+        printf("'%s'\n", defs->allDefs[i]);
     }
 
     
     // For .г (like .h, but глава)
     //g_includes();
     printf("defs:");
-    for (int i=0; i<defs.len_d; ++i) {
-        printf("%s\n", defs.allDefs[i]);
+    for (int i=0; i<defs->len_d; ++i) {
+        printf("%s\n", defs->allDefs[i]);
     }
 
     FILE *file = fopen(".gcc_temp.c", "w");
