@@ -435,7 +435,7 @@ int main(int argv, char** argc) {
         }
 
         char buff[50];
-        sprintf(buff, "#! /bin/sh\n\n%s", argc[1]);
+        sprintf(buff, "#! /bin/sh\n\n%.36s", argc[1]);
         fputs(buff, build);
         fclose(build);
     }
