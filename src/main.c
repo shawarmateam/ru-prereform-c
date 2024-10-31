@@ -259,6 +259,25 @@ char** slavenizator(const char* str, int* count) {
     return tokens;
 }
 
+void replaceText(char *source, const char *old_text, const char *new_text) {
+    char *pos;
+    int old_len = strlen(old_text);
+    int new_len = strlen(new_text);
+    
+    while ((pos = strstr(source, old_text)) != NULL) {
+        char *result = malloc(strlen(source) + new_len - old_len + 1);
+        
+        strncpy(result, source, pos - source);
+        result[pos - source] = 0;
+        
+        strcat(result, new_text);
+        strcat(result, pos + old_len);
+        strcpy(source, result);
+        
+        free(result);
+    }
+}
+
 void parsePreproc(struct Defs *defs, char *str) {
     int len = 0;
     const int strl = strlen(str);
@@ -271,7 +290,7 @@ void parsePreproc(struct Defs *defs, char *str) {
         if (tokens[i][0] == '#') {
             int lena = 0;
             char** args = splitString(tokens[i], &lena);
-            printf("split str\n");
+            printf("split str (%s)\n", args[0]);
 
             if (lena != 0) {
                 if (lena > 1 && strcmp(args[0], "#искоренить") == 0) {
@@ -283,18 +302,33 @@ void parsePreproc(struct Defs *defs, char *str) {
                         defs->allDefs = addString(defs->allDefs, &defs->len_d, args[1]);
                         defs->allDefsOn = addString(defs->allDefsOn, &defs->len_do, args[2]);
                     }
-                    printf("искоренено\n");
+                    printf("\nискоренено (%s)\n", defs->allDefs[defs->len_d-1]);
                 }
 
                 else if (lena > 1 && strcmp(args[0], "#гвнѣдрить") == 0) {
                     char* g_file = readFile(args[1]);
-                    parsePreproc(defs, g_file);
+                    printf("replacing (\n%s\n)\n", str);
+                    rmSth(g_file, "//");
+                    replaceText(str, tokens[i], g_file);
+                    printf("replaced\n");
+
+                    FILE *gf = fopen("./logs", "w");
+                    fprintf(gf, str); fclose(gf);
+
                     printf("tokens: '%s', g_file: '%s'\n", tokens[i], g_file);
+                    printf("INDEX: '%d'\n", i); i--;
                 }
             }
         }
-        printf("i: '%d'\n", i);
+        printf("i: '%d'... {\n%s}\n", i, str);
     }
+
+    rmSth(str, "//");
+    rmSth(str, "#искоренить");
+    rmSth(str, "#гвнѣдрить");
+
+    rmNewLines(str);
+    rmSpaces(str);
 }
 
 int main(int argv, char** argc) { // FIXME: сделать выделение памяти для defs.
@@ -309,7 +343,7 @@ int main(int argv, char** argc) { // FIXME: сделать выделение п
     }
 
     char* str = readFile(argc[2]);
-    struct Defs* defs;
+    struct Defs* defs = (struct Defs*)malloc(sizeof(struct Defs));
     char allDefs[][30] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
     "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой"};
 
@@ -335,11 +369,7 @@ int main(int argv, char** argc) { // FIXME: сделать выделение п
     parsePreproc(defs, str);
 
     printf("2'%s'\n", str);
-    rmSth(str, "//");
-    rmSth(str, "#искоренить");
 
-    rmNewLines(str);
-    rmSpaces(str);
 
     // обработка инфы дефов
     printf("i (all): %d\n", defs->len_d);
