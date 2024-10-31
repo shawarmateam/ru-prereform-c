@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 struct Defs {
     int len_d; // 30 by def.
@@ -259,14 +260,9 @@ char** slavenizator(const char* str, int* count) {
     return tokens;
 }
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 char* replaceText(const char* input, const char* target, const char* replacement) {
-    //const char* target = "#гвнѣдрить писатьвв.г";
-    //const char* replacement = "#внѣдрить <stdio.h>\n#искоренить молвитьф printf\n";
-
     size_t input_len = strlen(input);
     size_t target_len = strlen(target);
     size_t replacement_len = strlen(replacement);
@@ -294,11 +290,39 @@ char* replaceText(const char* input, const char* target, const char* replacement
     return result;
 }
 
+int getLines(const char *str) {
+    int count = 0;
+    const char *line_start = str;
+    
+    while (*line_start) {
+        const char *line_end = strchr(line_start, '\n');
+        
+        if (!line_end) {
+            return 0;
+        }
+        
+        if (line_end > line_start) {
+            int is_empty = 1;
+            for (const char *p = line_start; p < line_end; p++) {
+                if (!isspace((unsigned char)*p)) {
+                    is_empty = 0;
+                    break;
+                }
+            }
+            if (!is_empty) count++;
+        }
+        
+        line_start = line_end + 1;
+    }
+    
+    return count;
+}
+
 char* parsePreproc(struct Defs *defs, char *str) {
     int len = 0;
     const int strl = strlen(str);
     printf("tokens start\n");
-    char **tokens = slavenizator(str, &len);  len-=3;
+    char **tokens = slavenizator(str, &len);  len=getLines(str);
     printf("tokens end\n");
 
     printf("len: %d", len);
@@ -324,8 +348,10 @@ char* parsePreproc(struct Defs *defs, char *str) {
         }
     }
 
-    tokens = slavenizator(str, &len);  len=11; // new parse (это костыль. мне лень. потом сделаю адекватную длинну)
+    tokens = slavenizator(str, &len);  len=getLines(str); // new parse (это костыль. мне лень. потом сделаю адекватную длинну)
+    printf("getlines: '%d'\n", getLines(str));
     for (int i=0; i<len; ++i) {
+        printf("TOKEN: '%s'", tokens[i]);
         if (tokens[i][0] == '#') {
             printf("TOKENS[i] == '%s'\n", tokens[i]);
             int lena = 0;
@@ -346,7 +372,7 @@ char* parsePreproc(struct Defs *defs, char *str) {
                 }
             }
         }
-        printf("I == '%d', len == '%d'\n", i, len);
+        printf("             I == '%d', len == '%d'\n", i, len);
     }
 
     rmSth(str, "//");

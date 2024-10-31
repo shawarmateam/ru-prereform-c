@@ -1,2 +1,5 @@
-bin/
-*.o
+bin/        # Compiled files
+*.o         # Objects
+.gcc_temp.c # GCC temp from ГЦЦ translator
+logs        # Logs file for Ц
+build       # Build script (chmod needed)
