@@ -172,20 +172,6 @@ char* readFile(const char* filename) {
     return content;
 }
 
-void g_includes(char *g_content) {
-    // find index of #внѣдрить
-    const char *p = (const char*) g_content;
-    const char *word = "#внѣдрить";
-
-    int index = 0;
-    int wordLength = strlen(word);
-
-    while ((p = strstr(p, word)) != NULL) {
-        printf("Найдено слово '%s' на индексе: %d\n", word, p - g_content);
-        p += wordLength;
-    }
-}
-
 char** splitString(const char *input, int *count) {
     char *input_copy = strdup(input); // Копируем входную строку
     if (!input_copy) {
@@ -383,12 +369,7 @@ char* parsePreproc(struct Defs *defs, char *str) {
     return str;
 }
 
-int main(int argv, char** argc) { // FIXME: сделать выделение памяти для defs.
-    if (argv == 3 && argc[1] == "checkg") {
-        g_includes(readFile(argc[2]));
-        return 0;
-    }
-
+int main(int argv, char** argc) {
     if (argv < 3) {
         printf("ГЦЦ005: очень мало тезисовъ.\n");
         return -1;
@@ -448,17 +429,18 @@ int main(int argv, char** argc) { // FIXME: сделать выделение п
     fprintf(file, str);
     fclose(file);
     
+    if (strcmp(argc[1], "^") != 0) {
+        FILE *build = fopen("./build", "w");
+        if (file == NULL) {
+            perror("ГЦЦ004: Курьезъ при открытіи лѣтописи.");
+            return EXIT_FAILURE;
+        }
 
-    FILE *build = fopen("./build", "w");
-    if (file == NULL) {
-        perror("ГЦЦ004: Курьезъ при открытіи лѣтописи.");
-        return EXIT_FAILURE;
+        char buff[50];
+        sprintf(buff, "#! /bin/sh\n\n%s", argc[1]);
+        fprintf(build, buff);
+        fclose(build);
     }
-
-    char buff[50];
-    sprintf(buff, "#! /bin/sh\n\n%s", argc[1]);
-    fprintf(build, buff);
-    fclose(build);
 
     int status = system("./build");
     if (status == 0)
