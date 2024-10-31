@@ -302,8 +302,32 @@ char* parsePreproc(struct Defs *defs, char *str) {
     printf("tokens end\n");
 
     printf("len: %d", len);
+
+    for (int i=0; i<len; ++i) { // first check vnedreniya (внедрения)
+        if (tokens[i][0] == '#') {
+            int lena = 0;
+            char** args = splitString(tokens[i], &lena);
+
+            if (lena != 0) {
+                if (lena > 1 && strcmp(args[0], "#гвнѣдрить") == 0) {
+                    char* g_file = readFile(args[1]);
+                    printf("replacing (\n%s\n)\n", str);
+                    rmSth(g_file, "//");
+                    str = replaceText(str, tokens[i], g_file);
+                    printf("replaced\n");
+                    printf("LOG: STR: '%s'\n", str);
+                    
+                    FILE *save_log = fopen("./logs", "w");
+                    fprintf(save_log, str); fclose(save_log);
+                }
+            }
+        }
+    }
+
+    tokens = slavenizator(str, &len);  len=11; // new parse (это костыль. мне лень. потом сделаю адекватную длинну)
     for (int i=0; i<len; ++i) {
         if (tokens[i][0] == '#') {
+            printf("TOKENS[i] == '%s'\n", tokens[i]);
             int lena = 0;
             char** args = splitString(tokens[i], &lena);
             printf("split str (%s)\n", args[0]);
@@ -320,21 +344,9 @@ char* parsePreproc(struct Defs *defs, char *str) {
                     }
                     printf("\nискоренено (%s)\n", defs->allDefs[defs->len_d-1]);
                 }
-
-                else if (lena > 1 && strcmp(args[0], "#гвнѣдрить") == 0) {
-                    char* g_file = readFile(args[1]);
-                    printf("replacing (\n%s\n)\n", str);
-                    rmSth(g_file, "//");
-                    str = replaceText(str, "#гвнѣдрить писатьвв.г", "#внѣдрить <stdio.h>\n#искоренить молвитьф printf\n");
-                    printf("replaced\n");
-                    printf("LOG: STR: '%s'\n", str);
-
-                    printf("tokens: '%s', g_file: '%s'\n", tokens[i], g_file);
-                    printf("INDEX: '%d'\n", i);
-                }
             }
         }
-        printf("i: '%d'... {\n%s}\n", i, str);
+        printf("I == '%d', len == '%d'\n", i, len);
     }
 
     rmSth(str, "//");
