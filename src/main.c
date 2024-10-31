@@ -259,26 +259,42 @@ char** slavenizator(const char* str, int* count) {
     return tokens;
 }
 
-void replaceText(char *source, const char *old_text, const char *new_text) {
-    char *pos;
-    int old_len = strlen(old_text);
-    int new_len = strlen(new_text);
-    
-    while ((pos = strstr(source, old_text)) != NULL) {
-        char *result = malloc(strlen(source) + new_len - old_len + 1);
-        
-        strncpy(result, source, pos - source);
-        result[pos - source] = 0;
-        
-        strcat(result, new_text);
-        strcat(result, pos + old_len);
-        strcpy(source, result);
-        
-        free(result);
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* replaceText(const char* input, const char* target, const char* replacement) {
+    //const char* target = "#гвнѣдрить писатьвв.г";
+    //const char* replacement = "#внѣдрить <stdio.h>\n#искоренить молвитьф printf\n";
+
+    size_t input_len = strlen(input);
+    size_t target_len = strlen(target);
+    size_t replacement_len = strlen(replacement);
+
+    if (strstr(input, target) == NULL) {
+        char* result = (char*)malloc(input_len + 1);
+        strcpy(result, input);
+        return result;
     }
+
+    size_t new_len = input_len - target_len + replacement_len;
+
+    char* result = (char*)malloc(new_len + 1);
+    if (result == NULL) {
+        perror("Unable to allocate memory");
+        exit(EXIT_FAILURE);
+    }
+
+    char* pos = strstr(input, target);
+    size_t prefix_len = pos - input;
+    strncpy(result, input, prefix_len);
+    strcpy(result + prefix_len, replacement);
+    strcpy(result + prefix_len + replacement_len, pos + target_len);
+
+    return result;
 }
 
-void parsePreproc(struct Defs *defs, char *str) {
+char* parsePreproc(struct Defs *defs, char *str) {
     int len = 0;
     const int strl = strlen(str);
     printf("tokens start\n");
@@ -309,14 +325,12 @@ void parsePreproc(struct Defs *defs, char *str) {
                     char* g_file = readFile(args[1]);
                     printf("replacing (\n%s\n)\n", str);
                     rmSth(g_file, "//");
-                    replaceText(str, tokens[i], g_file);
+                    str = replaceText(str, "#гвнѣдрить писатьвв.г", "#внѣдрить <stdio.h>\n#искоренить молвитьф printf\n");
                     printf("replaced\n");
-
-                    FILE *gf = fopen("./logs", "w");
-                    fprintf(gf, str); fclose(gf);
+                    printf("LOG: STR: '%s'\n", str);
 
                     printf("tokens: '%s', g_file: '%s'\n", tokens[i], g_file);
-                    printf("INDEX: '%d'\n", i); i--;
+                    printf("INDEX: '%d'\n", i);
                 }
             }
         }
@@ -325,10 +339,10 @@ void parsePreproc(struct Defs *defs, char *str) {
 
     rmSth(str, "//");
     rmSth(str, "#искоренить");
-    rmSth(str, "#гвнѣдрить");
 
     rmNewLines(str);
     rmSpaces(str);
+    return str;
 }
 
 int main(int argv, char** argc) { // FIXME: сделать выделение памяти для defs.
@@ -366,7 +380,7 @@ int main(int argv, char** argc) { // FIXME: сделать выделение п
 
     printf("1'%s'\n", str);
     // TODO: сделать в отдельную функцию
-    parsePreproc(defs, str);
+    str = parsePreproc(defs, str);
 
     printf("2'%s'\n", str);
 
