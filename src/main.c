@@ -328,7 +328,7 @@ char* parsePreproc(struct Defs *defs, char *str) {
                     printf("LOG: STR: '%s'\n", str);
                     
                     FILE *save_log = fopen("./logs", "w");
-                    fprintf(save_log, str); fclose(save_log);
+                    fputs(str, save_log); fclose(save_log);
                 }
             }
         }
@@ -426,7 +426,7 @@ int main(int argv, char** argc) {
         return EXIT_FAILURE;
     }
 
-    fprintf(file, str);
+    fputs(str, file);
     fclose(file);
     
     if (strcmp(argc[1], "^") != 0) {
@@ -438,7 +438,7 @@ int main(int argv, char** argc) {
 
         char buff[50];
         sprintf(buff, "#! /bin/sh\n\n%s", argc[1]);
-        fprintf(build, buff);
+        fputs(buff, build);
         fclose(build);
     }
 
