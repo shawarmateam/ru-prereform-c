@@ -246,8 +246,6 @@ char** slavenizator(const char* str, int* count) {
     return tokens;
 }
 
-
-
 char* replaceText(const char* input, const char* target, const char* replacement) {
     size_t input_len = strlen(input);
     size_t target_len = strlen(target);
