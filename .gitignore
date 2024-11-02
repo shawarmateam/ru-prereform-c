@@ -1,5 +1,10 @@
-bin/        # Compiled files
-*.o         # Objects
-.gcc_temp.c # GCC temp from ГЦЦ translator
-logs        # Logs file for Ц
-build       # Build script (chmod needed)
+# Compiled files
+bin/
+# Objects      
+*.o
+# GCC temp from ГЦЦ translator   
+.gcc_temp.c
+# Logs file for Ц
+logs
+# Build script (chmod needed)       
+build

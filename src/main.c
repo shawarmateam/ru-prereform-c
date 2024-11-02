@@ -145,7 +145,7 @@ char* readFile(const char* filename) {
     file = fopen(filename, "r");
     if (file == NULL) {
         perror("ГЦЦ001: Курьезъ при открытіи лѣтописи.");
-        return NULL;
+        exit(EXIT_FAILURE);
     }
 
     // Читаем файл построчно
@@ -158,7 +158,7 @@ char* readFile(const char* filename) {
             perror("ГЦЦ002: Курьезъ при выдѣленіи знати.");
             free(content);
             fclose(file);
-            return NULL;
+            exit(EXIT_FAILURE);
         }
         content = new_content;
 
@@ -246,8 +246,6 @@ char** slavenizator(const char* str, int* count) {
     return tokens;
 }
 
-
-
 char* replaceText(const char* input, const char* target, const char* replacement) {
     size_t input_len = strlen(input);
     size_t target_len = strlen(target);
@@ -328,7 +326,7 @@ char* parsePreproc(struct Defs *defs, char *str) {
                     printf("LOG: STR: '%s'\n", str);
                     
                     FILE *save_log = fopen("./logs", "w");
-                    fprintf(save_log, str); fclose(save_log);
+                    fputs(str, save_log); fclose(save_log);
                 }
             }
         }
@@ -372,7 +370,7 @@ char* parsePreproc(struct Defs *defs, char *str) {
 int main(int argv, char** argc) {
     if (argv < 3) {
         printf("ГЦЦ005: очень мало тезисовъ.\n");
-        return -1;
+        return EXIT_FAILURE;
     }
 
     char* str = readFile(argc[2]);
@@ -426,7 +424,7 @@ int main(int argv, char** argc) {
         return EXIT_FAILURE;
     }
 
-    fprintf(file, str);
+    fputs(str, file);
     fclose(file);
     
     if (strcmp(argc[1], "^") != 0) {
@@ -437,8 +435,8 @@ int main(int argv, char** argc) {
         }
 
         char buff[50];
-        sprintf(buff, "#! /bin/sh\n\n%s", argc[1]);
-        fprintf(build, buff);
+        sprintf(buff, "#! /bin/sh\n\n%.36s", argc[1]);
+        fputs(buff, build);
         fclose(build);
     }
 
