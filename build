@@ -1,3 +1,3 @@
 #! /bin/sh
 
-gcc .gcc_temp.c -o test
+gcc .gcc_temp.c -o ./bin/test

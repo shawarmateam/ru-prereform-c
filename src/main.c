@@ -8,12 +8,6 @@ struct Defs {
     int len_d; // 30 by def.
     int len_do; // 30 by def.
 
-    //char[][len] initDefs = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
-    //"пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", NULL};
-
-    //char[][len] initDefsOn = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
-    //"switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", NULL};
-
     char** allDefs;
     char** allDefsOn;
 };
@@ -111,8 +105,8 @@ bool replaceWord(char *str, const char *oldWord, const char *newWord) {
             // Проверяем, совпадает ли слово с oldWord
             if (strncmp(&str[i], oldWord, oldWordLen) == 0 && 
                 (i == 0 || str[i - 1] == ' ') && 
-                (str[i + oldWordLen] == ' ' || str[i + oldWordLen] == '(' || 
-                str[i + oldWordLen] == '*' || str[i + oldWordLen] == '\0')) {
+                (str[i + oldWordLen] == ' ' || str[i + oldWordLen] == '(' || str[i + oldWordLen] == '*' || str[i + oldWordLen] == '\0' ||
+                 str[i + oldWordLen] == ',' || str[i + oldWordLen] == ')')) {
 
                 // Если совпадает, добавляем newWord в буфер
                 if (!wasReplaced) wasReplaced = true;
@@ -132,6 +126,7 @@ bool replaceWord(char *str, const char *oldWord, const char *newWord) {
 
     // Копируем результат обратно в исходную строку
     strcpy(str, buffer);
+
     return wasReplaced;
 }
 
