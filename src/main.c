@@ -5,8 +5,8 @@
 #include <ctype.h>
 
 struct Defs {
-    int len_d; // 30 by def.
-    int len_do; // 30 by def.
+    int len_d; // 32 by def.
+    int len_do; // 32 by def.
 
     char** allDefs;
     char** allDefsOn;
@@ -63,68 +63,56 @@ void rmSpaces(char *str) {
 }
 
 char** addString(char** array, int* size, const char* newString) {
-    // Увеличиваем размер массива на 1
     char** newArray = realloc(array, (*size + 1) * sizeof(char*));
     if (newArray == NULL) {
-        // Обработка ошибки при выделении памяти
         perror("Unable to allocate memory");
-        return array; // Возвращаем старый массив, если realloc не удался
+        return array;
     }
 
-    // Выделяем память для новой строки и копируем её
     newArray[*size] = malloc(strlen(newString) + 1);
     if (newArray[*size] == NULL) {
-        // Обработка ошибки при выделении памяти
         perror("Unable to allocate memory for new string");
-        return newArray; // Возвращаем новый массив, но без добавленной строки
+        return newArray;
     }
     strcpy(newArray[*size], newString);
-
-    // Увеличиваем размер
     (*size)++;
     return newArray;
 }
 
 bool replaceWord(char *str, const char *oldWord, const char *newWord) {
-    char buffer[1024]; // Буфер для хранения результата
+    char buffer[1024];
     char *pos;
     bool inQuotes = false;
     int index = 0;
     int oldWordLen = strlen(oldWord);
     int newWordLen = strlen(newWord);
     bool wasReplaced = false;
+    printf("WORD TO REPLACE: '%s'\n", newWord);
 
     for (int i = 0; str[i] != '\0'; i++) {
-        // Проверяем, находимся ли мы в кавычках
         if (str[i] == '"') {
-            inQuotes = !inQuotes; // Меняем состояние
+            inQuotes = !inQuotes;
         }
 
-        // Если не в кавычках, проверяем на замену
         if (!inQuotes) {
-            // Проверяем, совпадает ли слово с oldWord
             if (strncmp(&str[i], oldWord, oldWordLen) == 0 && 
-                (i == 0 || str[i - 1] == ' ') && 
+                (i == 0 || str[i - 1] == ' ' || str[i-1] == '(' || str[i-1] == '{') && 
                 (str[i + oldWordLen] == ' ' || str[i + oldWordLen] == '(' || str[i + oldWordLen] == '*' || str[i + oldWordLen] == '\0' ||
                  str[i + oldWordLen] == ',' || str[i + oldWordLen] == ')')) {
 
-                // Если совпадает, добавляем newWord в буфер
                 if (!wasReplaced) wasReplaced = true;
                 strcpy(&buffer[index], newWord);
                 index += newWordLen;
-                i += oldWordLen - 1; // Пропускаем oldWord
+                i += oldWordLen - 1;
             } else {
-                // Иначе просто копируем текущий символ
                 buffer[index++] = str[i];
             }
         } else {
-            // Если в кавычках, просто копируем символ
             buffer[index++] = str[i];
         }
     }
-    buffer[index] = '\0'; // Завершаем строку
+    buffer[index] = '\0';
 
-    // Копируем результат обратно в исходную строку
     strcpy(str, buffer);
 
     return wasReplaced;
@@ -133,22 +121,19 @@ bool replaceWord(char *str, const char *oldWord, const char *newWord) {
 char* readFile(const char* filename) {
     FILE *file;
     char line[256];
-    char *content = NULL; // Указатель на строку для хранения всего содержимого
-    size_t total_length = 0; // Общая длина содержимого
+    char *content = NULL;
+    size_t total_length = 0;
 
-    // Открываем файл для чтения
     file = fopen(filename, "r");
     if (file == NULL) {
         perror("ГЦЦ001: Курьезъ при открытіи лѣтописи.");
         exit(EXIT_FAILURE);
     }
 
-    // Читаем файл построчно
     while (fgets(line, sizeof(line), file)) {
         size_t line_length = strlen(line);
 
-        // Увеличиваем общий размер содержимого
-        char *new_content = realloc(content, total_length + line_length + 1); // +1 для '\0'
+        char *new_content = realloc(content, total_length + line_length + 1);
         if (new_content == NULL) {
             perror("ГЦЦ002: Курьезъ при выдѣленіи знати.");
             free(content);
@@ -157,52 +142,47 @@ char* readFile(const char* filename) {
         }
         content = new_content;
 
-        // Копируем строку в содержимое
         strcpy(content + total_length, line);
-        total_length += line_length; // Обновляем общую длину
+        total_length += line_length;
     }
 
-    // Закрываем файл
     fclose(file);
     return content;
 }
 
 char** splitString(const char *input, int *count) {
-    char *input_copy = strdup(input); // Копируем входную строку
+    char *input_copy = strdup(input);
     if (!input_copy) {
-        return NULL; // Проверка на успешное выделение памяти
+        return NULL;
     }
 
     char **args = NULL;
     *count = 0;
 
-    // Разделяем строку на аргументы
     char *token = strtok(input_copy, " ");
     while (token != NULL) {
-        // Увеличиваем размер массива
         args = (char **)realloc(args, (*count + 1) * sizeof(char *));
         if (!args) {
-            free(input_copy); // Освобождаем память в случае ошибки
-            return NULL; // Проверка на успешное выделение памяти
+            free(input_copy);
+            return NULL;
         }
 
-        // Выделяем память для нового аргумента и копируем его
         args[*count] = strdup(token);
         if (!args[*count]) {
             free(input_copy);
             for (int i = 0; i < *count; i++) {
-                free(args[i]); // Освобождаем ранее выделенную память
+                free(args[i]);
             }
             free(args);
-            return NULL; // Проверка на успешное выделение памяти
+            return NULL;
         }
 
         (*count)++;
         token = strtok(NULL, " ");
     }
 
-    free(input_copy); // Освобождаем память, выделенную для копии строки
-    return args; // Возвращаем массив аргументов
+    free(input_copy);
+    return args;
 }
 
 char** slavenizator(const char* str, int* count) {
@@ -370,15 +350,16 @@ int main(int argv, char** argc) {
 
     char* str = readFile(argc[2]);
     struct Defs* defs = (struct Defs*)malloc(sizeof(struct Defs));
-    char allDefs[][30] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
-    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой"};
+    char allDefs[][32] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
+    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой",
+    "НИЧТО", "размеръ"};
 
-    char defsIn[][30] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
-    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const"};
+    char defsIn[][32] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
+    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const", "NULL", "sizeof"};
     
-    defs->len_d = 30;
+    defs->len_d = 32;
     printf("len_d added\n");
-    defs->len_do = 30;
+    defs->len_do = 32;
 
     defs->allDefs = malloc(defs->len_d * sizeof(char*));
     defs->allDefsOn = malloc(defs->len_do * sizeof(char*));
@@ -391,7 +372,6 @@ int main(int argv, char** argc) {
     }
 
     printf("1'%s'\n", str);
-    // TODO: сделать в отдельную функцию
     str = parsePreproc(defs, str);
 
     printf("2'%s'\n", str);
@@ -402,12 +382,9 @@ int main(int argv, char** argc) {
     for (int i=0; i<defs->len_d; ++i) {
         printf("i: %d\n", i);
         replaceWord(str, defs->allDefs[i], defs->allDefsOn[i]);
-        printf("'%s'\n", defs->allDefs[i]);
+        printf("'%s'->'%s'\n", defs->allDefs[i], defs->allDefsOn[i]);
     }
 
-    
-    // For .г (like .h, but глава)
-    //g_includes();
     printf("defs:");
     for (int i=0; i<defs->len_d; ++i) {
         printf("%s\n", defs->allDefs[i]);
