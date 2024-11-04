@@ -98,7 +98,7 @@ bool replaceWord(char *str, const char *oldWord, const char *newWord) {
             if (strncmp(&str[i], oldWord, oldWordLen) == 0 && 
                 (i == 0 || str[i - 1] == ' ' || str[i-1] == '(' || str[i-1] == '{') && 
                 (str[i + oldWordLen] == ' ' || str[i + oldWordLen] == '(' || str[i + oldWordLen] == '*' || str[i + oldWordLen] == '\0' ||
-                 str[i + oldWordLen] == ',' || str[i + oldWordLen] == ')')) {
+                 str[i + oldWordLen] == ',' || str[i + oldWordLen] == ')' || str[i + oldWordLen] == ';' || str[i + oldWordLen] == ':')) {
 
                 if (!wasReplaced) wasReplaced = true;
                 strcpy(&buffer[index], newWord);

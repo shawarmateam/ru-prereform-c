@@ -1,4 +1,4 @@
 #include <stdio.h>
  #include <stdlib.h>
  #include <time.h>
- int main() { srand(time(NULL)); int random = (rand() % 8)+1; if (random == 8) { system("echo \"test\""); } return 0; } 
+ int main() { char test = 'A'; switch (test) { case 'a': printf("test == 'a'\n"); break; case 'b': printf("test == 'b'\n"); break; default: printf("test != 'b' && test != 'a'\n"); } return 0; } 
