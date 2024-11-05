@@ -402,12 +402,12 @@ int main(int argv, char** argc) {
     if (strcmp(argc[1], "^") != 0) {
         FILE *build = fopen("./build", "w");
         if (file == NULL) {
-            perror("\033[31mГЦЦ004\033[0m: Курьезъ при открытіи лѣтописи.");
+            perror("\033[31mГЦЦ004\033[0m: Курьезъ при открытіи лѣтописи сборки.");
             return EXIT_FAILURE;
         }
 
-        char buff[50];
-        sprintf(buff, "#! /bin/sh\n\n%.36s", argc[1]);
+        char buff[180];
+        sprintf(buff, "#! /bin/sh\n\n%.128s", argc[1]);
         fputs(buff, build);
         fclose(build);
     }
