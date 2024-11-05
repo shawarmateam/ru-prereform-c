@@ -1,0 +1,3 @@
+#!/bin/bash
+ruc "gcc /tmp/.gcc_temp.c -o $2" $1
+

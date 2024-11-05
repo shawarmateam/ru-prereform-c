@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "Копированіе библіи в /lib/ц/библіѧ/"
+sudo mkdir -p /lib/ц/библіѧ/
+
+for cfl in библіѧ/*;
+do
+    printf "Копированіе %s...\n" $cfl
+    sudo cp $cfl /lib/ц/библіѧ/
+done
+echo -e "\e[32mУспех!\e[0m"
+

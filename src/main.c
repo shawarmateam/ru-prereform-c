@@ -87,7 +87,7 @@ bool replaceWord(char *str, const char *oldWord, const char *newWord) {
     int oldWordLen = strlen(oldWord);
     int newWordLen = strlen(newWord);
     bool wasReplaced = false;
-    printf("WORD TO REPLACE: '%s'\n", newWord);
+    // printf("WORD TO REPLACE: '%s'\n", newWord);
 
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] == '"') {
@@ -126,7 +126,7 @@ char* readFile(const char* filename) {
 
     file = fopen(filename, "r");
     if (file == NULL) {
-        perror("ГЦЦ001: Курьезъ при открытіи лѣтописи.");
+        fprintf(stderr, "\033[31mГЦЦ001\033[0m: Курьезъ при открытіи лѣтописи %s.\n", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -135,7 +135,7 @@ char* readFile(const char* filename) {
 
         char *new_content = realloc(content, total_length + line_length + 1);
         if (new_content == NULL) {
-            perror("ГЦЦ002: Курьезъ при выдѣленіи знати.");
+            perror("\033[31mГЦЦ002\033[0m: Курьезъ при выдѣленіи знати.");
             free(content);
             fclose(file);
             exit(EXIT_FAILURE);
@@ -280,11 +280,11 @@ int getLines(const char *str) {
 char* parsePreproc(struct Defs *defs, char *str) {
     int len = 0;
     const int strl = strlen(str);
-    printf("tokens start\n");
+    // printf("tokens start\n");
     char **tokens = slavenizator(str, &len);  len=getLines(str);
-    printf("tokens end\n");
+    // printf("tokens end\n");
 
-    printf("len: %d", len);
+    // printf("len: %d", len);
 
     for (int i=0; i<len; ++i) { // first check vnedreniya (внедрения)
         if (tokens[i][0] == '#') {
@@ -294,11 +294,11 @@ char* parsePreproc(struct Defs *defs, char *str) {
             if (lena != 0) {
                 if (lena > 1 && strcmp(args[0], "#гвнѣдрить") == 0) {
                     char* g_file = readFile(args[1]);
-                    printf("replacing (\n%s\n)\n", str);
+                    // printf("replacing (\n%s\n)\n", str);
                     rmSth(g_file, "//");
                     str = replaceText(str, tokens[i], g_file);
-                    printf("replaced\n");
-                    printf("LOG: STR: '%s'\n", str);
+                    // printf("replaced\n");
+                    // printf("LOG: STR: '%s'\n", str);
                     
                     FILE *save_log = fopen("./logs", "w");
                     fputs(str, save_log); fclose(save_log);
@@ -308,14 +308,14 @@ char* parsePreproc(struct Defs *defs, char *str) {
     }
 
     tokens = slavenizator(str, &len);  len=getLines(str); // new parse (это костыль. мне лень. потом сделаю адекватную длинну)
-    printf("getlines: '%d'\n", getLines(str));
+    // printf("getlines: '%d'\n", getLines(str));
     for (int i=0; i<len; ++i) {
-        printf("TOKEN: '%s'", tokens[i]);
+        // printf("TOKEN: '%s'", tokens[i]);
         if (tokens[i][0] == '#') {
-            printf("TOKENS[i] == '%s'\n", tokens[i]);
+            // printf("TOKENS[i] == '%s'\n", tokens[i]);
             int lena = 0;
             char** args = splitString(tokens[i], &lena);
-            printf("split str (%s)\n", args[0]);
+            // printf("split str (%s)\n", args[0]);
 
             if (lena != 0) {
                 if (lena > 1 && strcmp(args[0], "#искоренить") == 0) {
@@ -323,15 +323,15 @@ char* parsePreproc(struct Defs *defs, char *str) {
                         defs->allDefs = addString(defs->allDefs, &defs->len_d, args[1]);
                         defs->allDefsOn = addString(defs->allDefsOn, &defs->len_do, "");
                     } else if (lena == 3) {
-                        printf("defs start\n");
+                        // printf("defs start\n");
                         defs->allDefs = addString(defs->allDefs, &defs->len_d, args[1]);
                         defs->allDefsOn = addString(defs->allDefsOn, &defs->len_do, args[2]);
                     }
-                    printf("\nискоренено (%s)\n", defs->allDefs[defs->len_d-1]);
+                    // printf("\nискоренено (%s)\n", defs->allDefs[defs->len_d-1]);
                 }
             }
         }
-        printf("             I == '%d', len == '%d'\n", i, len);
+        // printf("             I == '%d', len == '%d'\n", i, len);
     }
 
     rmSth(str, "//");
@@ -344,21 +344,21 @@ char* parsePreproc(struct Defs *defs, char *str) {
 
 int main(int argv, char** argc) {
     if (argv < 3) {
-        printf("ГЦЦ005: очень мало тезисовъ.\n");
+        printf("\033[31mГЦЦ005\033[0m: очень мало тезисовъ.\n");
         return EXIT_FAILURE;
     }
 
     char* str = readFile(argc[2]);
     struct Defs* defs = (struct Defs*)malloc(sizeof(struct Defs));
     char allDefs[][32] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
-    "пути", "яко", "кондиции", "умолчаніе", "делати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой",
+    "пути", "яко", "кондиціи", "умолчаніе", "дѣлати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой",
     "НИЧТО", "размеръ"};
 
     char defsIn[][32] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
     "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const", "NULL", "sizeof"};
     
     defs->len_d = 32;
-    printf("len_d added\n");
+    // printf("len_d added\n");
     defs->len_do = 32;
 
     defs->allDefs = malloc(defs->len_d * sizeof(char*));
@@ -371,28 +371,28 @@ int main(int argv, char** argc) {
         defs->allDefsOn[i] = defsIn[i];
     }
 
-    printf("1'%s'\n", str);
+    // printf("1'%s'\n", str);
     str = parsePreproc(defs, str);
 
-    printf("2'%s'\n", str);
+    // printf("2'%s'\n", str);
 
 
     // обработка инфы дефов
-    printf("i (all): %d\n", defs->len_d);
+    // printf("i (all): %d\n", defs->len_d);
     for (int i=0; i<defs->len_d; ++i) {
-        printf("i: %d\n", i);
+        // printf("i: %d\n", i);
         replaceWord(str, defs->allDefs[i], defs->allDefsOn[i]);
-        printf("'%s'->'%s'\n", defs->allDefs[i], defs->allDefsOn[i]);
+        // printf("'%s'->'%s'\n", defs->allDefs[i], defs->allDefsOn[i]);
     }
 
-    printf("defs:");
-    for (int i=0; i<defs->len_d; ++i) {
-        printf("%s\n", defs->allDefs[i]);
-    }
+    // printf("defs:");
+    // for (int i=0; i<defs->len_d; ++i) {
+    //     printf("%s\n", defs->allDefs[i]);
+    // }
 
-    FILE *file = fopen(".gcc_temp.c", "w");
+    FILE *file = fopen("/tmp/.gcc_temp.c", "w");
     if (file == NULL) {
-        perror("ГЦЦ003: Курьезъ при открытіи лѣтописи для сохраненія.");
+        perror("\033[31mГЦЦ003\033[0m: Курьезъ при открытіи лѣтописи для сохраненія.");
         return EXIT_FAILURE;
     }
 
@@ -402,7 +402,7 @@ int main(int argv, char** argc) {
     if (strcmp(argc[1], "^") != 0) {
         FILE *build = fopen("./build", "w");
         if (file == NULL) {
-            perror("ГЦЦ004: Курьезъ при открытіи лѣтописи.");
+            perror("\033[31mГЦЦ004\033[0m: Курьезъ при открытіи лѣтописи.");
             return EXIT_FAILURE;
         }
 
@@ -414,7 +414,7 @@ int main(int argv, char** argc) {
 
     int status = system("./build");
     if (status == 0)
-        printf("ГЦЦ: Лѣтопись переписана и ждетъ запуска.\n");
+        printf("\033[32mГЦЦ\033[0m: Лѣтопись переписана и ждетъ запуска.\n");
 
     return 0;
 }
