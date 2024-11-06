@@ -10,6 +10,7 @@ all: build
 build: ./${CODE_D}/main.c
 	mkdir -p bin/
 	gcc -o ${BUILD_D}/ruc ${FILES}
+	sudo cp -f ./${BUILD_D}/ruc /bin/
 	printf "\e[A\e[K\e[32mСДѢЛАТИ\e[0m: Двоичный кодъ ГЦЦ перѣписанъ и ждетъ исполнения\n"
 
 run: build

@@ -8,3 +8,5 @@ bin/
 logs
 # Build script (chmod needed)       
 build
+# Binary Ц
+*.д
