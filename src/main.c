@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define INIT_LEN 36
+#define INIT_LEN 35
 
 struct Defs {
     int len_d;
@@ -371,11 +371,11 @@ int main(int argv, char** argc) {
     char* str = readFile(argc[2]);
     struct Defs* defs = (struct Defs*)malloc(sizeof(struct Defs));
     char allDefs[][INIT_LEN] = {"#внѣдрить", "цѣло", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
-    "пути", "яко", "кондиціи", "умолчаніе", "дѣлати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой",
-    "НИЧТО", "размеръ", "БЪ0", "БЪ1", "БЪ2", "БЪ4", "БЪ8"};
+    "пути", "яко", "кондиціи", "умолчаніе", "дѣлати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "длѧ", "походъ", "дворянинъ", "крестьянинъ", "размѣръ", "домъ", "нѣту", "немой",
+    "НИЧТО", "БЪ0", "БЪ1", "БЪ2", "БЪ4", "БЪ8"};
 
     char defsIn[][INIT_LEN] = {"#include", "int", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
-    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const", "NULL", "sizeof", "void", "char", "short", "int", "long"};
+    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const", "NULL", "void", "char", "short", "int", "long"};
 
     defs->len_d = INIT_LEN;
     defs->len_do = INIT_LEN;
