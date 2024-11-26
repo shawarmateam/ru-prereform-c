@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define INIT_LEN 33
+#define INIT_LEN 32
 
 struct Defs {
     int len_d;
@@ -352,15 +352,14 @@ int main(int argv, char** argc) {
 
     char* str = readFile(argc[2]);
     struct Defs* defs = (struct Defs*)malloc(sizeof(struct Defs));
-    char allDefs[][INIT_LEN] = {"#внѣдрить", "цѣло", "императоръ", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
+    char allDefs[][INIT_LEN] = {"#внѣдрить", "цѣло", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
     "пути", "яко", "кондиціи", "умолчаніе", "дѣлати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой",
     "НИЧТО", "размеръ", "КЪ0"};
 
-    char defsIn[][INIT_LEN] = {"#include", "int", "main", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
+    char defsIn[][INIT_LEN] = {"#include", "int", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
     "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const", "NULL", "sizeof", "void"};
     
     defs->len_d = INIT_LEN;
-    // printf("len_d added\n");
     defs->len_do = INIT_LEN;
 
     defs->allDefs = malloc(defs->len_d * sizeof(char*));
@@ -373,24 +372,12 @@ int main(int argv, char** argc) {
         defs->allDefsOn[i] = defsIn[i];
     }
 
-    // printf("1'%s'\n", str);
     str = parsePreproc(defs, str);
 
-    // printf("2'%s'\n", str);
-
-
     // обработка инфы дефов
-    // printf("i (all): %d\n", defs->len_d);
     for (int i=0; i<defs->len_d; ++i) {
-        // printf("i: %d\n", i);
         replaceWord(str, defs->allDefs[i], defs->allDefsOn[i]);
-        // printf("'%s'->'%s'\n", defs->allDefs[i], defs->allDefsOn[i]);
     }
-
-    // printf("defs:");
-    // for (int i=0; i<defs->len_d; ++i) {
-    //     printf("%s\n", defs->allDefs[i]);
-    // }
 
     FILE *file = fopen("/tmp/.gcc_temp.c", "w");
     if (file == NULL) {
@@ -399,6 +386,7 @@ int main(int argv, char** argc) {
     }
 
     fputs(str, file);
+    fputs("int main(){императоръ();return 0;}", file);
     fclose(file);
     
     if (strcmp(argc[1], "^") != 0) {
