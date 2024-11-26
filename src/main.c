@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define INIT_LEN 32
+#define INIT_LEN 36
 
 struct Defs {
     int len_d;
@@ -372,11 +372,11 @@ int main(int argv, char** argc) {
     struct Defs* defs = (struct Defs*)malloc(sizeof(struct Defs));
     char allDefs[][INIT_LEN] = {"#внѣдрить", "цѣло", "дань", "долговязый", "краткій", "знакъ", "машинный", "коли", "коль", "але", "егда", "конѣцъ", "далѣе",
     "пути", "яко", "кондиціи", "умолчаніе", "дѣлати", "кратокъ-плавъ", "дологъ-плавъ", "перѣпись", "для", "походъ", "дворянинъ", "крестьянинъ", "размеръ", "домъ", "нѣту", "немой",
-    "НИЧТО", "размеръ", "КЪ0"};
+    "НИЧТО", "размеръ", "БЪ0", "БЪ1", "БЪ2", "БЪ4", "БЪ8"};
 
     char defsIn[][INIT_LEN] = {"#include", "int", "return", "long", "short", "char", "auto", "if", "if", "else", "while", "break", "continue",
-    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const", "NULL", "sizeof", "void"};
-    
+    "switch", "case", "default", "default", "do", "float", "double", "enum", "for", "goto", "signed", "unsigned", "sizeof", "struct", "void", "const", "NULL", "sizeof", "void", "char", "short", "int", "long"};
+
     defs->len_d = INIT_LEN;
     defs->len_do = INIT_LEN;
 
