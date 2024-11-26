@@ -344,6 +344,24 @@ char* parsePreproc(struct Defs *defs, char *str) {
     return str;
 }
 
+void screeningStr(const char *input, char *output) {
+    const char *cyrillic_n = "\\\xd0\xbd"; // utf-8 '\н'
+    const char *latin_n = "\\n"; // '\n'
+    size_t cyrillic_n_len = strlen(cyrillic_n);
+    size_t latin_n_len = strlen(latin_n);
+    
+    while (*input) {
+        if (strncmp(input, cyrillic_n, cyrillic_n_len) == 0) {
+            strcpy(output, latin_n);
+            output += latin_n_len;
+            input += cyrillic_n_len;
+        } else {
+            *output++ = *input++;
+        }
+    }
+    *output = 0;
+}
+
 int main(int argv, char** argc) {
     if (argv < 3) {
         printf("\033[31mГЦЦ005\033[0m: очень мало тезисовъ.\n");
@@ -377,6 +395,11 @@ int main(int argv, char** argc) {
     // обработка инфы дефов
     for (int i=0; i<defs->len_d; ++i) {
         replaceWord(str, defs->allDefs[i], defs->allDefsOn[i]);
+        
+        char *str_new = malloc(strlen(str)*2);
+        screeningStr(str, str_new);
+        str = strdup(str_new);
+        free(str_new);
     }
 
     FILE *file = fopen("/tmp/.gcc_temp.c", "w");
