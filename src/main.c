@@ -347,7 +347,7 @@ void screeningStr(const char *input, char *output) {
     *output = 0;
 }
 
-char* insert_text(const char* original, const char* text_to_insert, int index) {
+char* insert_text(char* original, const char* text_to_insert, int index) {
     if (index < 0 || index > strlen(original)) {
         perror("\033[31mГЦЦ006\033[0m: Курьезъ при высчитываніи длинны.");
         exit(7);
@@ -368,34 +368,11 @@ char* insert_text(const char* original, const char* text_to_insert, int index) {
     strcat(new_string, text_to_insert);
     strcat(new_string, original + index);
 
+    free(original);
     return new_string;
 }
 
-char* arrToStr(char** strings) {
-    int count = 0;
-    while (strings[count] != NULL) count++;
-
-    int total_length = 0;
-    for (int i = 0; i < count; i++) {
-        total_length += strlen(strings[i]);
-    }
-
-    char* result = (char*)malloc((total_length + 1) * sizeof(char));
-    if (result == NULL) {
-        return NULL;
-    }
-
-    result[0] = 0;
-    for (int i = 0; i < count; i++) {
-        strcat(result, strings[i]);
-    }
-
-    return result;
-}
-
-char** parseHolyCprint(char **strArr) {
-    char *str = arrToStr(strArr);
-
+char* parseHolyCprint(char *str) {
     bool inBrackets = false;
     bool isPrint = false;
     for (int i=0; str[i]!=0; ++i) {
@@ -403,7 +380,7 @@ char** parseHolyCprint(char **strArr) {
 
         if (str[i] == '"' && !inBrackets) {
             int j = 0;
-            while (str[i-j]!=';' || str[i-j]!='{') {
+            while (str[i-j]!=';' && str[i-j]!='{') {
                 if (str[i-j]=='=') {
                     isPrint = true;
                     break;
@@ -411,8 +388,26 @@ char** parseHolyCprint(char **strArr) {
 
                 j++;
             }
+
+            if (isPrint) {
+                char *tmp_str = insert_text(str, "printf(", i);
+                free(str);
+                str=strdup(tmp_str);
+                free(tmp_str);
+                
+                int j=8;
+                while (str[j+i]!='"') {
+                    ++j;
+                }++j;
+                
+                tmp_str = insert_text(str, ")", i+j);
+                free(str);
+                str=strdup(tmp_str);
+                free(tmp_str);
+            }
         }
     }
+    return str;
 }
 
 int main(int argv, char** argc) {
@@ -454,6 +449,9 @@ int main(int argv, char** argc) {
         str = strdup(str_new);
         free(str_new);
     }
+
+    // парс holy C принтов
+    str = parseHolyCprint(str);
 
     FILE *file = fopen("/tmp/.gcc_temp.c", "w");
     if (file == NULL) {
