@@ -347,7 +347,7 @@ void screeningStr(const char *input, char *output) {
     *output = 0;
 }
 
-char* insert_text(char* original, const char* text_to_insert, int index) {
+char* insert_text(const char* original, const char* text_to_insert, int index) {
     if (index < 0 || index > strlen(original)) {
         perror("\033[31mГЦЦ006\033[0m: Курьезъ при высчитываніи длинны.");
         exit(7);
@@ -368,7 +368,6 @@ char* insert_text(char* original, const char* text_to_insert, int index) {
     strcat(new_string, text_to_insert);
     strcat(new_string, original + index);
 
-    free(original);
     return new_string;
 }
 
@@ -379,9 +378,10 @@ char* parseHolyCprint(char *str) {
         if (str[i] == '(' || str[i] == ')' || str[i]==']' || str[i]=='[') inBrackets = !inBrackets;
 
         if (str[i] == '"' && !inBrackets) {
+            printf("in if()\n");
             int j = 0;
-            while (str[i-j]!=';' && str[i-j]!='{') {
-                if (str[i-j]=='=') {
+            while (str[i-j]!=';') {
+                if (str[i-j]=='=' || str[i-j]=='{' || str[i-j]=='}') {
                     isPrint = true;
                     break;
                 }
