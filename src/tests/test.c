@@ -1,39 +1,33 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-void removeChar(char *str, int index) {
-    int length = strlen(str);
-    
-    if (index < 0 || index >= length) {
-        return;
+char* insert_text(const char* original, const char* text_to_insert, int index) {
+    if (index < 0 || index > strlen(original)) {
+        return NULL;
     }
 
-    for (int i = index; i < length - 1; i++) {
-        str[i] = str[i + 1];
-    }
-    str[length - 1] = 0;
+    size_t original_len = strlen(original);
+    size_t insert_len = strlen(text_to_insert);
+
+    char* new_string = (char*)malloc(original_len + insert_len + 1);
+    if (new_string == NULL) {
+        return NULL;    }
+
+    strncpy(new_string, original, index);
+    new_string[index] = 0;
+
+    strcat(new_string, text_to_insert);
+    strcat(new_string, original + index);
+
+    return new_string;
 }
 
-void screeningStr(char *str, bool *inQuote) {
-    for (int i=0; str[i]!=0; ++i) {
-        if (str[i]=='"') *inQuote = !*inQuote;              // 'н'
-        else if (str[i]=='\'' && str[i+1]=='\\' && str[i+2]==0x04 && str[i+3]==0x3d) {
-            str[i+3] = 'n';
-            removeChar(str, i+2);
-        }
-
-        if (*inQuote && str[i-2]=='\\' && str[i]==0x3d && str[i-1]==0x04 && str[i-3]!='\\') {
-            str[i] = 'n';
-            removeChar(str, i-1);
-        }
-    }
-}
 int main() {
-    bool test = false;
-    char *text = "test text \"\\н пваапв \\\н\" '\\н'";
+    const char* original = "test text";
+    const char* text_to_insert = "printf(";
+    int index = 5;
 
+    char* result = insert_text(original, text_to_insert, index);
+    result = insert_text(result, ")", 9+7);
+    printf("Результат: %s\n", result);
+    free(result);
 
-    screeningStr(text, &test);
     return 0;
 }

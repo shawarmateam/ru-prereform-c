@@ -89,7 +89,6 @@ bool replaceWord(char *str, const char *oldWord, const char *newWord) {
     int oldWordLen = strlen(oldWord);
     int newWordLen = strlen(newWord);
     bool wasReplaced = false;
-    // printf("WORD TO REPLACE: '%s'\n", newWord);
 
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] == '"') {
@@ -114,7 +113,6 @@ bool replaceWord(char *str, const char *oldWord, const char *newWord) {
         }
     }
     buffer[index] = '\0';
-
     strcpy(str, buffer);
 
     return wasReplaced;
@@ -282,13 +280,9 @@ int getLines(const char *str) {
 char* parsePreproc(struct Defs *defs, char *str) {
     int len = 0;
     const int strl = strlen(str);
-    // printf("tokens start\n");
     char **tokens = slavenizator(str, &len);  len=getLines(str);
-    // printf("tokens end\n");
 
-    // printf("len: %d", len);
-
-    for (int i=0; i<len; ++i) { // first check vnedreniya (внедрения)
+    for (int i=0; i<len; ++i) {
         if (tokens[i][0] == '#') {
             int lena = 0;
             char** args = splitString(tokens[i], &lena);
@@ -296,11 +290,8 @@ char* parsePreproc(struct Defs *defs, char *str) {
             if (lena != 0) {
                 if (lena > 1 && strcmp(args[0], "#гвнѣдрить") == 0) {
                     char* g_file = readFile(args[1]);
-                    // printf("replacing (\n%s\n)\n", str);
                     rmSth(g_file, "//");
                     str = replaceText(str, tokens[i], g_file);
-                    // printf("replaced\n");
-                    // printf("LOG: STR: '%s'\n", str);
                     
                     FILE *save_log = fopen("./logs", "w");
                     fputs(str, save_log); fclose(save_log);
@@ -309,15 +300,11 @@ char* parsePreproc(struct Defs *defs, char *str) {
         }
     }
 
-    tokens = slavenizator(str, &len);  len=getLines(str); // new parse (это костыль. мне лень. потом сделаю адекватную длинну)
-    // printf("getlines: '%d'\n", getLines(str));
+    tokens = slavenizator(str, &len);  len=getLines(str);
     for (int i=0; i<len; ++i) {
-        // printf("TOKEN: '%s'", tokens[i]);
         if (tokens[i][0] == '#') {
-            // printf("TOKENS[i] == '%s'\n", tokens[i]);
             int lena = 0;
             char** args = splitString(tokens[i], &lena);
-            // printf("split str (%s)\n", args[0]);
 
             if (lena != 0) {
                 if (lena > 1 && strcmp(args[0], "#искоренить") == 0) {
@@ -329,11 +316,9 @@ char* parsePreproc(struct Defs *defs, char *str) {
                         defs->allDefs = addString(defs->allDefs, &defs->len_d, args[1]);
                         defs->allDefsOn = addString(defs->allDefsOn, &defs->len_do, args[2]);
                     }
-                    // printf("\nискоренено (%s)\n", defs->allDefs[defs->len_d-1]);
                 }
             }
         }
-        // printf("             I == '%d', len == '%d'\n", i, len);
     }
 
     rmSth(str, "//");
@@ -360,6 +345,74 @@ void screeningStr(const char *input, char *output) {
         }
     }
     *output = 0;
+}
+
+char* insert_text(const char* original, const char* text_to_insert, int index) {
+    if (index < 0 || index > strlen(original)) {
+        perror("\033[31mГЦЦ006\033[0m: Курьезъ при высчитываніи длинны.");
+        exit(7);
+    }
+
+    size_t original_len = strlen(original);
+    size_t insert_len = strlen(text_to_insert);
+
+    char* new_string = (char*)malloc(original_len + insert_len + 1);
+    if (new_string == NULL) {
+        perror("\033[31mГЦЦ002\033[0m: Курьезъ при выдѣленіи знати.");
+        exit(6);
+    }
+
+    strncpy(new_string, original, index);
+    new_string[index] = 0;
+
+    strcat(new_string, text_to_insert);
+    strcat(new_string, original + index);
+
+    return new_string;
+}
+
+char* arrToStr(char** strings) {
+    int count = 0;
+    while (strings[count] != NULL) count++;
+
+    int total_length = 0;
+    for (int i = 0; i < count; i++) {
+        total_length += strlen(strings[i]);
+    }
+
+    char* result = (char*)malloc((total_length + 1) * sizeof(char));
+    if (result == NULL) {
+        return NULL;
+    }
+
+    result[0] = 0;
+    for (int i = 0; i < count; i++) {
+        strcat(result, strings[i]);
+    }
+
+    return result;
+}
+
+char** parseHolyCprint(char **strArr) {
+    char *str = arrToStr(strArr);
+
+    bool inBrackets = false;
+    bool isPrint = false;
+    for (int i=0; str[i]!=0; ++i) {
+        if (str[i] == '(' || str[i] == ')' || str[i]==']' || str[i]=='[') inBrackets = !inBrackets;
+
+        if (str[i] == '"' && !inBrackets) {
+            int j = 0;
+            while (str[i-j]!=';' || str[i-j]!='{') {
+                if (str[i-j]=='=') {
+                    isPrint = true;
+                    break;
+                }
+
+                j++;
+            }
+        }
+    }
 }
 
 int main(int argv, char** argc) {
